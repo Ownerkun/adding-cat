@@ -1,4 +1,4 @@
-// TODO Post card component to display individual posts have a user's name, profile picture, post image, and caption. have a like button.
+// TODO Implement Edit and Delete Post functionality for user's own posts
 import React from "react";
 import {
   View,
@@ -33,6 +33,7 @@ const PostCard = ({ post }) => {
           style={styles.profilePic}
         />
         <Text style={styles.username}>{post.username}</Text>
+        {/* Edit/Delete post */}
       </View>
       <Text style={styles.caption}>{post.caption}</Text>
       <Image source={{ uri: post.postImage }} style={styles.postImage} />
