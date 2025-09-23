@@ -34,8 +34,8 @@ const PostCard = ({ post }) => {
         />
         <Text style={styles.username}>{post.username}</Text>
       </View>
-      <Image source={{ uri: post.postImage }} style={styles.postImage} />
       <Text style={styles.caption}>{post.caption}</Text>
+      <Image source={{ uri: post.postImage }} style={styles.postImage} />
       <TouchableOpacity style={styles.likeButton}>
         <Text style={styles.likeButtonText}>Like</Text>
       </TouchableOpacity>
@@ -59,8 +59,6 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     padding: 8,
-    borderBottomWidth: 1,
-    borderBottomColor: "#eee",
   },
   profilePic: {
     width: 40,
