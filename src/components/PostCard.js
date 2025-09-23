@@ -1,10 +1,20 @@
 // TODO Post card component to display individual posts have a user's name, profile picture, post image, and caption. have a like button.
 import React from "react";
-import { View, Text, Image, StyleSheet, TouchableOpacity } from "react-native";
+import {
+  View,
+  Text,
+  Image,
+  StyleSheet,
+  TouchableOpacity,
+  useWindowDimensions,
+} from "react-native";
 
 const PostCard = ({ post }) => {
   const [isLiked, setIsLiked] = React.useState(false);
   const [likeCount, setLikeCount] = React.useState(post.initialLikes || 0);
+  const { width } = useWindowDimensions();
+
+  const cardWidth = width - 32;
 
   const handleLikePress = () => {
     if (isLiked) {
@@ -16,7 +26,7 @@ const PostCard = ({ post }) => {
   };
 
   return (
-    <View style={styles.card}>
+    <View style={styles.card} width={cardWidth}>
       <View style={styles.header}>
         <Image
           source={{ uri: post.userProfilePic }}
