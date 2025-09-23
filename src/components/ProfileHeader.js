@@ -5,25 +5,19 @@ import {
   StyleSheet,
   TouchableOpacity,
   Image,
-  TextInput,
-  Modal,
   Alert,
 } from "react-native";
 import { MaterialIcons } from "@expo/vector-icons";
+import EditUsernameModal from "./EditUsernameModal";
 
 const ProfileHeader = ({ user, onUpdateUser }) => {
   const [isEditModalVisible, setIsEditModalVisible] = useState(false);
   const [editedUsername, setEditedUsername] = useState(user.username);
 
-  const handleSaveProfile = () => {
-    if (!editedUsername.trim()) {
-      Alert.alert("Error", "Username cannot be empty");
-      return;
-    }
-
+  const handleSaveProfile = (newUsername) => {
     onUpdateUser({
       ...user,
-      username: editedUsername.trim(),
+      username: newUsername,
     });
 
     setIsEditModalVisible(false);
@@ -33,6 +27,15 @@ const ProfileHeader = ({ user, onUpdateUser }) => {
   const handleEditAvatar = () => {
     Alert.alert("Edit Avatar", "Avatar editing functionality would go here");
     // TODO: Integrate image picker to change avatar
+  };
+
+  const openEditModal = () => {
+    setEditedUsername(user.username);
+    setIsEditModalVisible(true);
+  };
+
+  const closeEditModal = () => {
+    setIsEditModalVisible(false);
   };
 
   return (
@@ -50,21 +53,13 @@ const ProfileHeader = ({ user, onUpdateUser }) => {
           </TouchableOpacity>
         </View>
 
-        {/* Post Count */}
-        <View style={styles.statsContainer}>
-          <View style={styles.statItem}>
-            <Text style={styles.statNumber}>{user.postsCount}</Text>
-            <Text style={styles.statLabel}>Posts</Text>
-          </View>
-        </View>
-
         {/* User Info */}
         <View style={styles.userInfo}>
           <Text style={styles.userName}>{user.username}</Text>
           {/* Edit Username Button */}
           <TouchableOpacity
             style={styles.usernameEditButton}
-            onPress={() => setIsEditModalVisible(true)}
+            onPress={openEditModal}
           >
             <MaterialIcons name="edit" color={"#fff"} size={12} />
           </TouchableOpacity>
@@ -72,41 +67,13 @@ const ProfileHeader = ({ user, onUpdateUser }) => {
       </View>
 
       {/* Edit Profile Modal */}
-      <Modal
-        animationType="slide"
-        transparent={true}
-        visible={isEditModalVisible}
-        onRequestClose={() => setIsEditModalVisible(false)}
-      >
-        <View style={styles.modalContainer}>
-          <View style={styles.modalContent}>
-            <Text style={styles.modalTitle}>Edit Profile</Text>
-
-            <TextInput
-              style={styles.input}
-              placeholder="Username"
-              value={editedUsername}
-              onChangeText={setEditedUsername}
-            />
-
-            <View style={styles.modalButtons}>
-              <TouchableOpacity
-                style={[styles.modalButton, styles.cancelButton]}
-                onPress={() => setIsEditModalVisible(false)}
-              >
-                <Text style={styles.cancelButtonText}>Cancel</Text>
-              </TouchableOpacity>
-
-              <TouchableOpacity
-                style={[styles.modalButton, styles.saveButton]}
-                onPress={handleSaveProfile}
-              >
-                <Text style={styles.saveButtonText}>Save</Text>
-              </TouchableOpacity>
-            </View>
-          </View>
-        </View>
-      </Modal>
+      <EditUsernameModal
+        isVisible={isEditModalVisible}
+        onClose={closeEditModal}
+        username={editedUsername}
+        onUsernameChange={setEditedUsername}
+        onSave={handleSaveProfile}
+      />
     </View>
   );
 };
@@ -137,22 +104,6 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
   },
-  statsContainer: {
-    flexDirection: "row",
-    marginBottom: 16,
-  },
-  statItem: {
-    alignItems: "center",
-    marginHorizontal: 20,
-  },
-  statNumber: {
-    fontSize: 18,
-    fontWeight: "bold",
-  },
-  statLabel: {
-    fontSize: 14,
-    color: "#666",
-  },
   userInfo: {
     alignItems: "center",
     marginBottom: 16,
@@ -167,57 +118,6 @@ const styles = StyleSheet.create({
     padding: 6,
     borderRadius: 16,
     marginLeft: 10,
-  },
-  // Modal Styles
-  modalContainer: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-    backgroundColor: "rgba(0, 0, 0, 0.5)",
-  },
-  modalContent: {
-    backgroundColor: "#fff",
-    borderRadius: 10,
-    padding: 20,
-    width: "80%",
-  },
-  modalTitle: {
-    fontSize: 18,
-    fontWeight: "bold",
-    marginBottom: 16,
-    textAlign: "center",
-  },
-  input: {
-    borderWidth: 1,
-    borderColor: "#ddd",
-    borderRadius: 5,
-    padding: 10,
-    marginBottom: 16,
-  },
-  modalButtons: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-  },
-  modalButton: {
-    padding: 10,
-    borderRadius: 5,
-    flex: 1,
-    marginHorizontal: 5,
-  },
-  cancelButton: {
-    backgroundColor: "#ddd",
-  },
-  saveButton: {
-    backgroundColor: "#6200EA",
-  },
-  cancelButtonText: {
-    textAlign: "center",
-    fontWeight: "bold",
-  },
-  saveButtonText: {
-    color: "#fff",
-    textAlign: "center",
-    fontWeight: "bold",
   },
 });
 

@@ -35,7 +35,7 @@ const mockPosts = [
 const HomeScreen = ({}) => {
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Social Feed</Text>
+      <Text style={styles.title}>เติมแมว 😸</Text>
       <FlatList
         data={mockPosts}
         keyExtractor={(item) => item.id.toString()}

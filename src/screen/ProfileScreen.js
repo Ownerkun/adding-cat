@@ -1,12 +1,5 @@
 import React, { useState } from "react";
-import {
-  View,
-  Text,
-  StyleSheet,
-  ScrollView,
-  TouchableOpacity,
-  FlatList,
-} from "react-native";
+import { View, Text, StyleSheet, ScrollView, FlatList } from "react-native";
 import PostCard from "../components/PostCard";
 import ProfileHeader from "../components/ProfileHeader";
 
@@ -18,7 +11,6 @@ const ProfileScreen = ({ navigation }) => {
     profilePic:
       "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=150",
     bio: "Travel enthusiast & photographer 📸",
-    postsCount: 24,
   });
 
   // Mock user posts
