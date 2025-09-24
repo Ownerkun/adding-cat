@@ -1,5 +1,12 @@
 import React from "react";
-import { View, Text, StyleSheet, FlatList } from "react-native";
+import {
+  View,
+  Text,
+  StyleSheet,
+  FlatList,
+  TouchableOpacity,
+} from "react-native";
+import { MaterialIcons } from "@expo/vector-icons";
 import PostCard from "../components/PostCard";
 
 const mockPosts = [
@@ -32,17 +39,30 @@ const mockPosts = [
   },
 ];
 
-const HomeScreen = ({}) => {
+const HomeScreen = ({ navigation }) => {
+  const navigateToCreatePost = () => {
+    navigation.navigate("CreatePost");
+  };
+
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>เติมแมว 😸</Text>
+      <View style={styles.header}>
+        <Text style={styles.title}>เติมแมว 😸</Text>
+        <TouchableOpacity
+          style={styles.createPostButton}
+          onPress={navigateToCreatePost}
+        >
+          <MaterialIcons name="add" size={24} color="#fff" />
+        </TouchableOpacity>
+      </View>
+
       <FlatList
         data={mockPosts}
         keyExtractor={(item) => item.id.toString()}
         renderItem={({ item }) => <PostCard post={item} />}
         showsVerticalScrollIndicator={false}
         contentContainerStyle={styles.listContent}
-      ></FlatList>
+      />
     </View>
   );
 };
@@ -50,16 +70,31 @@ const HomeScreen = ({}) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
     backgroundColor: "#f5f5f5",
     paddingTop: 50,
+  },
+  header: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    backgroundColor: "#fff",
+    borderBottomWidth: 1,
+    borderBottomColor: "#e0e0e0",
   },
   title: {
     fontSize: 24,
     fontWeight: "bold",
-    marginBottom: 16,
     color: "#333",
+  },
+  createPostButton: {
+    backgroundColor: "#6200EA",
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    justifyContent: "center",
+    alignItems: "center",
   },
   listContent: {
     paddingBottom: 16,
