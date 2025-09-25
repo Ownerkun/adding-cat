@@ -1,40 +1,31 @@
-import React from "react";
-import { View, Text, StyleSheet, FlatList } from "react-native";
+import React, { useEffect } from "react";
+import {
+  View,
+  Text,
+  StyleSheet,
+  FlatList,
+  RefreshControl,
+  ActivityIndicator,
+} from "react-native";
 import { useAuth } from "../AuthContext";
+import { usePost } from "../PostContext";
 import PostCard from "../components/PostCard";
-
-const mockPosts = [
-  {
-    id: 1,
-    username: "john_doe",
-    userProfilePic:
-      "https://images.unsplash.com/photo-1494790108755-2616b612b786?w=150",
-    postImage:
-      "https://images.unsplash.com/photo-1579546929662-711aa81148cf?w=400",
-    caption: "Beautiful sunset at the beach! 🌅",
-  },
-  {
-    id: 2,
-    username: "jane_smith",
-    userProfilePic:
-      "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=150",
-    postImage:
-      "https://images.unsplash.com/photo-1501854140801-50d01698950b?w=400",
-    caption: "Mountain hiking adventure! ⛰️",
-  },
-  {
-    id: 3,
-    username: "jane_smith",
-    userProfilePic:
-      "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=150",
-    postImage:
-      "https://images.unsplash.com/photo-1501854140801-50d01698950b?w=400",
-    caption: "Mountain hiking adventure! ⛰️",
-  },
-];
 
 const HomeScreen = ({ navigation }) => {
   const { profile } = useAuth();
+  const { posts, loading, fetchPosts } = usePost();
+
+  useEffect(() => {
+    fetchPosts();
+  }, []);
+
+  const onRefresh = async () => {
+    await fetchPosts();
+  };
+
+  const renderPostItem = ({ item }) => (
+    <PostCard post={item} isOwnPost={item.user_id === profile?.id} />
+  );
 
   return (
     <View style={styles.container}>
@@ -47,13 +38,30 @@ const HomeScreen = ({ navigation }) => {
         </View>
       </View>
 
-      <FlatList
-        data={mockPosts}
-        keyExtractor={(item) => item.id.toString()}
-        renderItem={({ item }) => <PostCard post={item} />}
-        showsVerticalScrollIndicator={false}
-        contentContainerStyle={styles.listContent}
-      />
+      {loading && posts.length === 0 ? (
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator size="large" color="#6200EA" />
+        </View>
+      ) : (
+        <FlatList
+          data={posts}
+          keyExtractor={(item) => item.id.toString()}
+          renderItem={renderPostItem}
+          showsVerticalScrollIndicator={false}
+          contentContainerStyle={styles.listContent}
+          refreshControl={
+            <RefreshControl refreshing={loading} onRefresh={onRefresh} />
+          }
+          ListEmptyComponent={
+            <View style={styles.emptyContainer}>
+              <Text style={styles.emptyText}>No posts yet</Text>
+              <Text style={styles.emptySubtext}>
+                Be the first to share a photo!
+              </Text>
+            </View>
+          }
+        />
+      )}
     </View>
   );
 };
@@ -84,9 +92,27 @@ const styles = StyleSheet.create({
     color: "#666",
     marginTop: 2,
   },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+  },
   listContent: {
     paddingBottom: 16,
-    paddingHorizontal: 16,
+    padding: 16,
+  },
+  emptyContainer: {
+    alignItems: "center",
+    padding: 40,
+  },
+  emptyText: {
+    fontSize: 18,
+    color: "#666",
+    marginBottom: 8,
+  },
+  emptySubtext: {
+    fontSize: 14,
+    color: "#999",
   },
 });
 

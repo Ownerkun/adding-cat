@@ -6,27 +6,61 @@ import {
   TouchableOpacity,
   Image,
   Alert,
+  ActivityIndicator,
 } from "react-native";
 import { MaterialIcons } from "@expo/vector-icons";
 import EditUsernameModal from "./EditUsernameModal";
+import { useAuth } from "../AuthContext";
 
 const ProfileHeader = ({ user, onUpdateUser }) => {
   const [isEditModalVisible, setIsEditModalVisible] = useState(false);
   const [editedUsername, setEditedUsername] = useState(user.username);
+  const [isUpdating, setIsUpdating] = useState(false);
+  const { updateProfile } = useAuth();
 
-  const handleSaveProfile = (newUsername) => {
-    onUpdateUser({
-      ...user,
-      username: newUsername,
-    });
+  const handleSaveProfile = async (newUsername) => {
+    if (!newUsername.trim()) {
+      Alert.alert("Error", "Username cannot be empty");
+      return;
+    }
 
-    setIsEditModalVisible(false);
-    Alert.alert("Success", "Profile updated successfully!");
+    if (newUsername === user.username) {
+      setIsEditModalVisible(false);
+      return;
+    }
+
+    setIsUpdating(true);
+
+    try {
+      const { data, error } = await updateProfile({
+        username: newUsername,
+      });
+
+      if (error) {
+        throw error;
+      }
+
+      onUpdateUser({
+        ...user,
+        username: newUsername,
+      });
+
+      setIsEditModalVisible(false);
+      Alert.alert("Success", "Profile updated successfully!");
+    } catch (error) {
+      console.error("Error updating profile:", error);
+      Alert.alert("Error", "Failed to update profile. Please try again.");
+    } finally {
+      setIsUpdating(false);
+    }
   };
 
   const handleEditAvatar = () => {
-    Alert.alert("Edit Avatar", "Avatar editing functionality would go here");
-    // TODO: Integrate image picker to change avatar
+    Alert.alert(
+      "Edit Avatar",
+      "Avatar editing functionality will be implemented soon"
+    );
+    // TODO: Implement avatar upload functionality
   };
 
   const openEditModal = () => {
@@ -44,7 +78,14 @@ const ProfileHeader = ({ user, onUpdateUser }) => {
       <View style={styles.profileSection}>
         {/* Avatar Section */}
         <View style={styles.avatarContainer}>
-          <Image source={{ uri: user.profilePic }} style={styles.avatar} />
+          <Image
+            source={{
+              uri:
+                user.profilePic ||
+                "https://images.unsplash.com/photo-1494790108755-2616b612b786?w=150",
+            }}
+            style={styles.avatar}
+          />
           <TouchableOpacity
             style={styles.avatarEditButton}
             onPress={handleEditAvatar}
@@ -56,12 +97,16 @@ const ProfileHeader = ({ user, onUpdateUser }) => {
         {/* User Info */}
         <View style={styles.userInfo}>
           <Text style={styles.userName}>{user.username}</Text>
-          {/* Edit Username Button */}
           <TouchableOpacity
             style={styles.usernameEditButton}
             onPress={openEditModal}
+            disabled={isUpdating}
           >
-            <MaterialIcons name="edit" color={"#fff"} size={12} />
+            {isUpdating ? (
+              <ActivityIndicator size="small" color="#fff" />
+            ) : (
+              <MaterialIcons name="edit" color={"#fff"} size={14} />
+            )}
           </TouchableOpacity>
         </View>
       </View>
@@ -83,10 +128,13 @@ const styles = StyleSheet.create({
     backgroundColor: "#fff",
     padding: 20,
     alignItems: "center",
+    borderBottomWidth: 1,
+    borderBottomColor: "#f0f0f0",
   },
   avatarContainer: {
     alignItems: "center",
     marginBottom: 16,
+    position: "relative",
   },
   avatar: {
     width: 100,
@@ -96,28 +144,33 @@ const styles = StyleSheet.create({
   avatarEditButton: {
     position: "absolute",
     bottom: 0,
-    left: "18%",
+    right: 0,
     backgroundColor: "#6200EA",
     width: 32,
     height: 32,
     borderRadius: 16,
     justifyContent: "center",
     alignItems: "center",
+    borderWidth: 2,
+    borderColor: "#fff",
   },
   userInfo: {
-    alignItems: "center",
-    marginBottom: 16,
     flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 8,
   },
   userName: {
     fontSize: 22,
     fontWeight: "bold",
+    marginRight: 8,
   },
   usernameEditButton: {
     backgroundColor: "#6200EA",
-    padding: 6,
-    borderRadius: 16,
-    marginLeft: 10,
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    justifyContent: "center",
+    alignItems: "center",
   },
 });
 

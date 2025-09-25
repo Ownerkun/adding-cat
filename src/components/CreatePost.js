@@ -36,7 +36,7 @@ const CreatePost = ({ navigation }) => {
       }
 
       const result = await ImagePicker.launchImageLibraryAsync({
-        mediaTypes: ImagePicker.MediaType,
+        mediaTypes: ImagePicker.mediaTypes,
         allowsEditing: true,
         aspect: [1, 1],
         quality: 0.8,
@@ -91,12 +91,20 @@ const CreatePost = ({ navigation }) => {
 
     try {
       setUploading(true);
+      console.log("Starting post creation...");
 
       const { url: imageUrl, error: uploadError } = await uploadImage(image);
 
       if (uploadError) {
-        throw uploadError;
+        throw new Error(`Upload failed: ${uploadError.message}`);
       }
+
+      if (!imageUrl) {
+        throw new Error("No image URL returned from upload");
+      }
+
+      console.log("Image uploaded successfully:", imageUrl);
+      console.log("Creating post with caption:", caption);
 
       const { error: postError } = await createPost(imageUrl, caption.trim());
 
@@ -110,7 +118,10 @@ const CreatePost = ({ navigation }) => {
       navigation.goBack();
     } catch (error) {
       console.error("Error creating post:", error);
-      Alert.alert("Error", "Failed to create post. Please try again.");
+      Alert.alert(
+        "Error",
+        error.message || "Failed to create post. Please try again."
+      );
     } finally {
       setUploading(false);
     }

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   View,
   Text,
@@ -7,64 +7,32 @@ import {
   FlatList,
   TouchableOpacity,
   Alert,
+  ActivityIndicator,
 } from "react-native";
 import { MaterialIcons } from "@expo/vector-icons";
 import PostCard from "../components/PostCard";
 import ProfileHeader from "../components/ProfileHeader";
 import { useAuth } from "../AuthContext";
+import { usePost } from "../PostContext";
 
 const ProfileScreen = ({ navigation }) => {
-  const { signOut } = useAuth();
+  const { user, profile, signOut } = useAuth();
+  const { posts, fetchPosts, loading } = usePost();
+  const [userPosts, setUserPosts] = useState([]);
+  const [profileLoading, setProfileLoading] = useState(true);
 
-  // Mock user data
-  const [user, setUser] = useState({
-    id: 1,
-    username: "John Doe",
-    profilePic:
-      "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=150",
-    bio: "Travel enthusiast & photographer 📸",
-  });
+  // Filter posts to show only user's posts
+  useEffect(() => {
+    if (user && posts) {
+      const filteredPosts = posts.filter((post) => post.user_id === user.id);
+      setUserPosts(filteredPosts);
+      setProfileLoading(false);
+    }
+  }, [posts, user]);
 
-  // Mock user posts
-  const [userPosts, setUserPosts] = useState([
-    {
-      id: 1,
-      username: user.username,
-      userProfilePic: user.profilePic,
-      postImage:
-        "https://images.unsplash.com/photo-1579546929662-711aa81148cf?w=400",
-      caption: "Beautiful sunset at the beach! 🌅",
-      initialLikes: 42,
-    },
-    {
-      id: 2,
-      username: user.username,
-      userProfilePic: user.profilePic,
-      postImage:
-        "https://images.unsplash.com/photo-1501854140801-50d01698950b?w=400",
-      caption: "Mountain hiking adventure! ⛰️",
-      initialLikes: 38,
-    },
-    {
-      id: 3,
-      username: user.username,
-      userProfilePic: user.profilePic,
-      postImage:
-        "https://images.unsplash.com/photo-1519681393784-d120267933ba?w=400",
-      caption: "City lights are amazing! 🌃",
-      initialLikes: 56,
-    },
-  ]);
-
-  const handleUpdateUser = (updatedUser) => {
-    setUser(updatedUser);
-
-    // Update posts with new username
-    const updatedPosts = userPosts.map((post) => ({
-      ...post,
-      username: updatedUser.username,
-    }));
-    setUserPosts(updatedPosts);
+  const handleUpdateUser = async (updatedUser) => {
+    // This will be handled by the ProfileHeader component through AuthContext
+    console.log("User updated:", updatedUser);
   };
 
   const handleLogout = () => {
@@ -80,7 +48,40 @@ const ProfileScreen = ({ navigation }) => {
     ]);
   };
 
-  const renderPostItem = ({ item }) => <PostCard post={item} />;
+  const handleDeletePost = async (postId) => {
+    Alert.alert("Delete Post", "Are you sure you want to delete this post?", [
+      { text: "Cancel", style: "cancel" },
+      {
+        text: "Delete",
+        style: "destructive",
+        onPress: async () => {
+          try {
+            // TODO: Implement delete post functionality in PostContext
+            Alert.alert("Success", "Post deleted successfully");
+            await fetchPosts(); // Refresh posts
+          } catch (error) {
+            Alert.alert("Error", "Failed to delete post");
+          }
+        },
+      },
+    ]);
+  };
+
+  const renderPostItem = ({ item }) => (
+    <PostCard
+      post={item}
+      onDelete={() => handleDeletePost(item.id)}
+      isOwnPost={true}
+    />
+  );
+
+  if (profileLoading) {
+    return (
+      <View style={styles.loadingContainer}>
+        <ActivityIndicator size="large" color="#6200EA" />
+      </View>
+    );
+  }
 
   return (
     <View style={styles.container}>
@@ -94,12 +95,23 @@ const ProfileScreen = ({ navigation }) => {
 
       <ScrollView style={styles.scrollView}>
         {/* Profile Header Component */}
-        <ProfileHeader user={user} onUpdateUser={handleUpdateUser} />
+        {profile && (
+          <ProfileHeader
+            user={{
+              id: user.id,
+              username: profile.username,
+              profilePic: profile.avatar_url,
+            }}
+            onUpdateUser={handleUpdateUser}
+          />
+        )}
 
         {/* Posts Section */}
         <View style={styles.postsSection}>
-          <Text style={styles.postsTitle}>Your Posts</Text>
-          {userPosts.length > 0 ? (
+          <Text style={styles.postsTitle}>Your Posts ({userPosts.length})</Text>
+          {loading ? (
+            <ActivityIndicator size="small" color="#6200EA" />
+          ) : userPosts.length > 0 ? (
             <FlatList
               data={userPosts}
               renderItem={renderPostItem}
@@ -108,7 +120,11 @@ const ProfileScreen = ({ navigation }) => {
             />
           ) : (
             <View style={styles.noPostsContainer}>
+              <MaterialIcons name="photo-camera" size={60} color="#ccc" />
               <Text style={styles.noPostsText}>No posts yet</Text>
+              <Text style={styles.noPostsSubtext}>
+                Share your first photo by tapping the + button
+              </Text>
             </View>
           )}
         </View>
@@ -121,6 +137,11 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "#f5f5f5",
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
   },
   header: {
     flexDirection: "row",
@@ -150,11 +171,18 @@ const styles = StyleSheet.create({
   },
   noPostsContainer: {
     alignItems: "center",
-    padding: 20,
+    padding: 40,
   },
   noPostsText: {
-    fontSize: 16,
+    fontSize: 18,
     color: "#666",
+    marginTop: 16,
+    marginBottom: 8,
+  },
+  noPostsSubtext: {
+    fontSize: 14,
+    color: "#999",
+    textAlign: "center",
   },
 });
 

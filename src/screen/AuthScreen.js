@@ -91,7 +91,7 @@ const AuthScreen = ({ navigation }) => {
       <ScrollView contentContainerStyle={styles.scrollContainer}>
         <View style={styles.header}>
           <MaterialIcons name="pets" size={60} color="#6200EA" />
-          <Text style={styles.title}>เติมแมว 😸</Text>
+          <Text style={styles.title}>เติมแมว</Text>
           <Text style={styles.subtitle}>
             {isLogin ? "Welcome back!" : "Create your account"}
           </Text>

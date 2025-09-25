@@ -55,7 +55,6 @@ export const PostProvider = ({ children }) => {
 
       if (error) throw error;
 
-      // Refresh posts list
       await fetchPosts();
       return { data, error: null };
     } catch (error) {
@@ -64,32 +63,37 @@ export const PostProvider = ({ children }) => {
     }
   };
 
-  // Upload image to Supabase Storage
+  //image upload
   const uploadImage = async (imageUri) => {
     try {
       if (!user) throw new Error("User not authenticated");
 
-      // Generate unique filename
       const filename = `${user.id}/${Date.now()}.jpg`;
+      console.log("Uploading image:", filename);
 
-      // Convert image to blob
-      const response = await fetch(imageUri);
-      const blob = await response.blob();
+      const formData = new FormData();
+      formData.append("file", {
+        uri: imageUri,
+        name: filename,
+        type: "image/jpeg",
+      });
 
-      // Upload to Supabase Storage
       const { data, error } = await supabase.storage
-        .from("posts") // Make sure you have a 'posts' bucket in Supabase Storage
-        .upload(filename, blob, {
+        .from("posts")
+        .upload(filename, formData, {
           contentType: "image/jpeg",
         });
 
-      if (error) throw error;
+      if (error) {
+        console.error("Supabase upload error:", error);
+        throw error;
+      }
 
-      // Get public URL
       const {
         data: { publicUrl },
       } = supabase.storage.from("posts").getPublicUrl(filename);
 
+      console.log("Image uploaded successfully:", publicUrl);
       return { url: publicUrl, error: null };
     } catch (error) {
       console.error("Error uploading image:", error);
@@ -101,20 +105,12 @@ export const PostProvider = ({ children }) => {
   const likePost = async (postId) => {
     try {
       if (!user) throw new Error("User not authenticated");
-
-      const { error } = await supabase.from("likes").insert([
-        {
-          post_id: postId,
-          user_id: user.id,
-        },
-      ]);
-
+      const { error } = await supabase
+        .from("likes")
+        .insert([{ post_id: postId, user_id: user.id }]);
       if (error) throw error;
-
-      // Update like count
       await supabase.rpc("increment_like_count", { post_id: postId });
-      await fetchPosts(); // Refresh posts
-
+      await fetchPosts();
       return { error: null };
     } catch (error) {
       console.error("Error liking post:", error);
@@ -126,22 +122,35 @@ export const PostProvider = ({ children }) => {
   const unlikePost = async (postId) => {
     try {
       if (!user) throw new Error("User not authenticated");
-
       const { error } = await supabase
         .from("likes")
         .delete()
         .eq("post_id", postId)
         .eq("user_id", user.id);
-
       if (error) throw error;
-
-      // Update like count
       await supabase.rpc("decrement_like_count", { post_id: postId });
-      await fetchPosts(); // Refresh posts
-
+      await fetchPosts();
       return { error: null };
     } catch (error) {
       console.error("Error unliking post:", error);
+      return { error };
+    }
+  };
+
+  // Delete a post
+  const deletePost = async (postId) => {
+    try {
+      if (!user) throw new Error("User not authenticated");
+      const { error } = await supabase
+        .from("posts")
+        .delete()
+        .eq("id", postId)
+        .eq("user_id", user.id);
+      if (error) throw error;
+      await fetchPosts();
+      return { error: null };
+    } catch (error) {
+      console.error("Error deleting post:", error);
       return { error };
     }
   };
@@ -160,6 +169,7 @@ export const PostProvider = ({ children }) => {
     likePost,
     unlikePost,
     fetchPosts,
+    deletePost,
   };
 
   return <PostContext.Provider value={value}>{children}</PostContext.Provider>;
