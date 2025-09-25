@@ -10,10 +10,12 @@ import {
 } from "react-native";
 import { MaterialIcons } from "@expo/vector-icons";
 import EditUsernameModal from "./EditUsernameModal";
+import ChangeAvatar from "./ChangeAvatar";
 import { useAuth } from "../AuthContext";
 
 const ProfileHeader = ({ user, onUpdateUser }) => {
   const [isEditModalVisible, setIsEditModalVisible] = useState(false);
+  const [isAvatarModalVisible, setIsAvatarModalVisible] = useState(false);
   const [editedUsername, setEditedUsername] = useState(user.username);
   const [isUpdating, setIsUpdating] = useState(false);
   const { updateProfile } = useAuth();
@@ -55,12 +57,11 @@ const ProfileHeader = ({ user, onUpdateUser }) => {
     }
   };
 
-  const handleEditAvatar = () => {
-    Alert.alert(
-      "Edit Avatar",
-      "Avatar editing functionality will be implemented soon"
-    );
-    // TODO: Implement avatar upload functionality
+  const handleAvatarUpdate = (newAvatarUrl) => {
+    onUpdateUser({
+      ...user,
+      profilePic: newAvatarUrl,
+    });
   };
 
   const openEditModal = () => {
@@ -68,8 +69,16 @@ const ProfileHeader = ({ user, onUpdateUser }) => {
     setIsEditModalVisible(true);
   };
 
+  const openAvatarModal = () => {
+    setIsAvatarModalVisible(true);
+  };
+
   const closeEditModal = () => {
     setIsEditModalVisible(false);
+  };
+
+  const closeAvatarModal = () => {
+    setIsAvatarModalVisible(false);
   };
 
   return (
@@ -88,7 +97,7 @@ const ProfileHeader = ({ user, onUpdateUser }) => {
           />
           <TouchableOpacity
             style={styles.avatarEditButton}
-            onPress={handleEditAvatar}
+            onPress={openAvatarModal}
           >
             <MaterialIcons name="image" color={"#fff"} size={16} />
           </TouchableOpacity>
@@ -111,13 +120,20 @@ const ProfileHeader = ({ user, onUpdateUser }) => {
         </View>
       </View>
 
-      {/* Edit Profile Modal */}
+      {/* Edit Username Modal */}
       <EditUsernameModal
         isVisible={isEditModalVisible}
         onClose={closeEditModal}
         username={editedUsername}
         onUsernameChange={setEditedUsername}
         onSave={handleSaveProfile}
+      />
+
+      {/* Change Avatar Modal */}
+      <ChangeAvatar
+        isVisible={isAvatarModalVisible}
+        onClose={closeAvatarModal}
+        onAvatarUpdate={handleAvatarUpdate}
       />
     </View>
   );
