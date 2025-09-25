@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React from "react";
 import {
   View,
   Text,
@@ -13,24 +13,24 @@ import { useAuth } from "../AuthContext";
 import { usePost } from "../PostContext";
 
 const PostCard = ({ post, isOwnPost = false, navigation }) => {
-  const [isLiked, setIsLiked] = useState(false);
-  const [likeCount, setLikeCount] = useState(post.like_count || 0);
   const { user } = useAuth();
   const { likePost, unlikePost } = usePost();
   const { width } = useWindowDimensions();
 
   const cardWidth = width - 32;
 
+  // Use the like status from the post data
+  const isLiked = post.isLikedByCurrentUser || false;
+  const likeCount = post.like_count || 0;
+
   const handleLikePress = async () => {
     try {
       if (isLiked) {
         await unlikePost(post.id);
-        setLikeCount(likeCount - 1);
       } else {
         await likePost(post.id);
-        setLikeCount(likeCount + 1);
       }
-      setIsLiked(!isLiked);
+      // The like status will be updated when fetchPosts is called in the context
     } catch (error) {
       console.error("Error liking post:", error);
       Alert.alert("Error", "Failed to like post");
