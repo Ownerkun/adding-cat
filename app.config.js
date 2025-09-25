@@ -8,8 +8,8 @@ export default {
       eas: {
         projectId: "301a44b0-4edc-43fd-8c33-7029841c4107",
       },
-      supabaseUrl: process.env.SUPABASE_URL,
-      supabaseAnonKey: process.env.SUPABASE_ANON_KEY,
+      supabaseUrl: process.env.EXPO_PUBLIC_SUPABASE_URL,
+      supabaseAnonKey: process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY,
     },
     android: {
       package: "com.ownerkun.addingcat",

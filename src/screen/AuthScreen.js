@@ -47,25 +47,32 @@ const AuthScreen = ({ navigation }) => {
 
     try {
       if (isLogin) {
-        // Login
         const { data, error } = await signIn(email, password);
         if (error) {
           Alert.alert("Error", error.message);
         }
       } else {
-        // Register
         const { data, error } = await signUp(email, password, username.trim());
         if (error) {
           Alert.alert("Error", error.message);
         } else if (data?.user) {
-          Alert.alert("Success", [
-            { text: "OK", onPress: () => setIsLogin(true) },
-          ]);
-          // Clear form
-          setEmail("");
-          setPassword("");
-          setConfirmPassword("");
-          setUsername("");
+          Alert.alert(
+            "Success",
+            data.message ||
+              "Account created successfully! Please check your email to confirm your account before signing in.",
+            [
+              {
+                text: "OK",
+                onPress: () => {
+                  setIsLogin(true);
+                  setEmail("");
+                  setPassword("");
+                  setConfirmPassword("");
+                  setUsername("");
+                },
+              },
+            ]
+          );
         }
       }
     } catch (error) {
@@ -77,7 +84,6 @@ const AuthScreen = ({ navigation }) => {
 
   const toggleAuthMode = () => {
     setIsLogin(!isLogin);
-    // Clear form when switching modes
     setPassword("");
     setConfirmPassword("");
     setUsername("");

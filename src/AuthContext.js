@@ -9,18 +9,50 @@ export const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
 
   // Fetch user profile
-  const fetchProfile = async (userId) => {
+  const fetchOrCreateProfile = async (userId) => {
     try {
+      // First, try to fetch existing profile
       const { data, error } = await supabase
         .from("users")
         .select("*")
         .eq("id", userId)
         .single();
 
-      if (error) throw error;
+      if (error && error.code === "PGRST116") {
+        // PGRST116 = no rows returned
+        // Profile doesn't exist, so create one
+        console.log("Creating new profile for user:", userId);
+
+        const { data: newProfile, error: createError } = await supabase
+          .from("users")
+          .insert([
+            {
+              id: userId,
+              username: `user_${userId.slice(0, 8)}`, // Default username
+              avatar_url: null,
+            },
+          ])
+          .select()
+          .single();
+
+        if (createError) {
+          console.error("Error creating profile:", createError);
+          throw createError;
+        }
+
+        setProfile(newProfile);
+        return newProfile;
+      } else if (error) {
+        // Some other error occurred
+        throw error;
+      }
+
+      // Profile exists, set it
       setProfile(data);
+      return data;
     } catch (error) {
-      console.error("Error fetching profile:", error);
+      console.error("Error in fetchOrCreateProfile:", error);
+      throw error;
     }
   };
 
@@ -50,19 +82,25 @@ export const AuthProvider = ({ children }) => {
     supabase.auth.getSession().then(({ data: { session } }) => {
       setUser(session?.user ?? null);
       if (session?.user) {
-        fetchProfile(session.user.id);
+        fetchOrCreateProfile(session.user.id).catch((error) => {
+          console.error("Error handling initial session:", error);
+        });
       }
       setLoading(false);
     });
 
-    // Listen for auth changes
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange(async (event, session) => {
       setUser(session?.user ?? null);
 
       if (session?.user) {
-        await fetchProfile(session.user.id);
+        try {
+          await fetchOrCreateProfile(session.user.id);
+        } catch (error) {
+          console.error("Error handling auth state change:", error);
+          setProfile(null);
+        }
       } else {
         setProfile(null);
       }
@@ -79,7 +117,12 @@ export const AuthProvider = ({ children }) => {
         email,
         password,
       });
-      return { data, error };
+
+      if (error) {
+        return { data: null, error };
+      }
+
+      return { data, error: null };
     } catch (error) {
       return { data: null, error };
     }
@@ -87,7 +130,7 @@ export const AuthProvider = ({ children }) => {
 
   const signUp = async (email, password, username) => {
     try {
-      // Create auth user with metadata
+      // Only create auth user - profile will be created on first login
       const { data: authData, error: authError } = await supabase.auth.signUp({
         email,
         password,
@@ -103,32 +146,14 @@ export const AuthProvider = ({ children }) => {
         return { data: null, error: authError };
       }
 
-      // Create user profile - this should now work with the updated RLS policy
-      if (authData.user) {
-        const { error: profileError } = await supabase.from("users").insert([
-          {
-            id: authData.user.id,
-            username: username,
-            avatar_url: null,
-          },
-        ]);
-
-        if (profileError) {
-          console.error("Profile creation error:", profileError);
-
-          // If profile creation fails, try to delete the auth user to clean up
-          await supabase.auth.admin.deleteUser(authData.user.id);
-
-          return {
-            data: null,
-            error: {
-              message: "Failed to create user profile. Please try again.",
-            },
-          };
-        }
-      }
-
-      return { data: authData, error: null };
+      return {
+        data: {
+          user: authData.user,
+          message:
+            "Please check your email to confirm your account before signing in.",
+        },
+        error: null,
+      };
     } catch (error) {
       console.error("Sign up error:", error);
       return {
