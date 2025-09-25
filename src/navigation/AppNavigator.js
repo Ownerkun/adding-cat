@@ -20,21 +20,7 @@ const AuthenticatedStack = () => {
   return (
     <Stack.Navigator screenOptions={{ headerShown: false }}>
       <Stack.Screen name="Main" component={MainTabNavigator} />
-      <Stack.Screen name="CreatePostScreen" component={CreatePostScreen} />
       <Stack.Screen name="ForgetPassword" component={ForgetPasswordScreen} />
-    </Stack.Navigator>
-  );
-};
-
-const HomeStack = () => {
-  return (
-    <Stack.Navigator screenOptions={{ headerShown: false }}>
-      <Stack.Screen name="Home" component={HomeScreen} />
-      <Stack.Screen
-        name="CreatePost"
-        component={CreatePostScreen}
-        options={{ title: "CreatePost", headerBackTitle: "Back" }}
-      />
     </Stack.Navigator>
   );
 };
@@ -45,6 +31,10 @@ const MainTabNavigator = () => {
     <Tab.Navigator
       screenOptions={{
         tabBarActiveTintColor: "#6200EA",
+        tabBarStyle: {
+          paddingBottom: 5,
+          height: 60,
+        },
         headerShown: false,
       }}
     >
@@ -55,6 +45,18 @@ const MainTabNavigator = () => {
           tabBarIcon: ({ color, size }) => (
             <MaterialIcons name="home" color={color} size={size} />
           ),
+        }}
+      />
+      <Tab.Screen
+        name="CreatePost"
+        component={CreatePostScreen}
+        options={{
+          tabBarIcon: ({ color, size }) => (
+            <View style={styles.createPostButton}>
+              <MaterialIcons name="add" color="#fff" size={28} />
+            </View>
+          ),
+          tabBarLabel: () => null,
         }}
       />
       <Tab.Screen
@@ -96,6 +98,23 @@ const AppNavigator = () => {
       {user ? <AuthenticatedStack /> : <AuthStack />}
     </NavigationContainer>
   );
+};
+
+const styles = {
+  createPostButton: {
+    backgroundColor: "#6200EA",
+    width: 60,
+    height: 60,
+    borderRadius: 30,
+    justifyContent: "center",
+    alignItems: "center",
+    marginBottom: 20,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.3,
+    shadowRadius: 4,
+    elevation: 5,
+  },
 };
 
 export default AppNavigator;

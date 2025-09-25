@@ -5,7 +5,7 @@ import { View, StyleSheet } from "react-native";
 const CreatePostScreen = ({ navigation }) => {
   return (
     <View style={styles.container}>
-      <CreatePost navigation={navigation} />;
+      <CreatePost navigation={navigation} />
     </View>
   );
 };
@@ -13,7 +13,6 @@ const CreatePostScreen = ({ navigation }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    marginTop: 40,
   },
 });
 

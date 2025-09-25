@@ -1,13 +1,5 @@
 import React from "react";
-import {
-  View,
-  Text,
-  StyleSheet,
-  FlatList,
-  TouchableOpacity,
-  Alert,
-} from "react-native";
-import { MaterialIcons } from "@expo/vector-icons";
+import { View, Text, StyleSheet, FlatList } from "react-native";
 import { useAuth } from "../AuthContext";
 import PostCard from "../components/PostCard";
 
@@ -42,24 +34,7 @@ const mockPosts = [
 ];
 
 const HomeScreen = ({ navigation }) => {
-  const { user, profile, signOut } = useAuth();
-
-  const navigateToCreatePost = () => {
-    navigation.navigate("CreatePost");
-  };
-
-  const handleLogout = () => {
-    Alert.alert("Logout", "Are you sure you want to logout?", [
-      { text: "Cancel", style: "cancel" },
-      {
-        text: "Logout",
-        style: "destructive",
-        onPress: async () => {
-          await signOut();
-        },
-      },
-    ]);
-  };
+  const { profile } = useAuth();
 
   return (
     <View style={styles.container}>
@@ -69,19 +44,6 @@ const HomeScreen = ({ navigation }) => {
           {profile && (
             <Text style={styles.welcomeText}>สวัสดี {profile.username}!</Text>
           )}
-        </View>
-
-        <View style={styles.headerButtons}>
-          <TouchableOpacity
-            style={styles.createPostButton}
-            onPress={navigateToCreatePost}
-          >
-            <MaterialIcons name="add" size={24} color="#fff" />
-          </TouchableOpacity>
-
-          <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
-            <MaterialIcons name="logout" size={20} color="#6200EA" />
-          </TouchableOpacity>
         </View>
       </View>
 
@@ -121,28 +83,6 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: "#666",
     marginTop: 2,
-  },
-  headerButtons: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 10,
-  },
-  createPostButton: {
-    backgroundColor: "#6200EA",
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  logoutButton: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    justifyContent: "center",
-    alignItems: "center",
-    borderWidth: 1,
-    borderColor: "#6200EA",
   },
   listContent: {
     paddingBottom: 16,

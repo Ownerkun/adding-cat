@@ -1,9 +1,21 @@
 import React, { useState } from "react";
-import { View, Text, StyleSheet, ScrollView, FlatList } from "react-native";
+import {
+  View,
+  Text,
+  StyleSheet,
+  ScrollView,
+  FlatList,
+  TouchableOpacity,
+  Alert,
+} from "react-native";
+import { MaterialIcons } from "@expo/vector-icons";
 import PostCard from "../components/PostCard";
 import ProfileHeader from "../components/ProfileHeader";
+import { useAuth } from "../AuthContext";
 
 const ProfileScreen = ({ navigation }) => {
+  const { signOut } = useAuth();
+
   // Mock user data
   const [user, setUser] = useState({
     id: 1,
@@ -55,6 +67,19 @@ const ProfileScreen = ({ navigation }) => {
     setUserPosts(updatedPosts);
   };
 
+  const handleLogout = () => {
+    Alert.alert("Logout", "Are you sure you want to logout?", [
+      { text: "Cancel", style: "cancel" },
+      {
+        text: "Logout",
+        style: "destructive",
+        onPress: async () => {
+          await signOut();
+        },
+      },
+    ]);
+  };
+
   const renderPostItem = ({ item }) => <PostCard post={item} />;
 
   return (
@@ -62,6 +87,9 @@ const ProfileScreen = ({ navigation }) => {
       {/* Header */}
       <View style={styles.header}>
         <Text style={styles.headerTitle}>Profile</Text>
+        <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
+          <MaterialIcons name="logout" size={24} color="#6200EA" />
+        </TouchableOpacity>
       </View>
 
       <ScrollView style={styles.scrollView}>
@@ -106,12 +134,8 @@ const styles = StyleSheet.create({
     fontSize: 20,
     fontWeight: "bold",
   },
-  editButton: {
+  logoutButton: {
     padding: 8,
-  },
-  editButtonText: {
-    color: "#6200EA",
-    fontWeight: "bold",
   },
   scrollView: {
     flex: 1,
