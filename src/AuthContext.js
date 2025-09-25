@@ -74,47 +74,89 @@ export const AuthProvider = ({ children }) => {
   }, []);
 
   const signIn = async (email, password) => {
-    const { data, error } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    });
-    return { data, error };
+    try {
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
+      return { data, error };
+    } catch (error) {
+      return { data: null, error };
+    }
   };
 
   const signUp = async (email, password, username) => {
-    // Create auth user
-    const { data: authData, error: authError } = await supabase.auth.signUp({
-      email,
-      password,
-    });
-
-    if (authError) return { data: null, error: authError };
-
-    // Create user profile
-    if (authData.user) {
-      const { error: profileError } = await supabase.from("users").insert([
-        {
-          id: authData.user.id,
-          username: username,
-          avatar_url: null,
+    try {
+      // Create auth user with metadata
+      const { data: authData, error: authError } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          data: {
+            username: username,
+          },
         },
-      ]);
+      });
 
-      if (profileError) return { data: null, error: profileError };
+      if (authError) {
+        console.error("Auth error:", authError);
+        return { data: null, error: authError };
+      }
+
+      // Create user profile - this should now work with the updated RLS policy
+      if (authData.user) {
+        const { error: profileError } = await supabase.from("users").insert([
+          {
+            id: authData.user.id,
+            username: username,
+            avatar_url: null,
+          },
+        ]);
+
+        if (profileError) {
+          console.error("Profile creation error:", profileError);
+
+          // If profile creation fails, try to delete the auth user to clean up
+          await supabase.auth.admin.deleteUser(authData.user.id);
+
+          return {
+            data: null,
+            error: {
+              message: "Failed to create user profile. Please try again.",
+            },
+          };
+        }
+      }
+
+      return { data: authData, error: null };
+    } catch (error) {
+      console.error("Sign up error:", error);
+      return {
+        data: null,
+        error: {
+          message: "An unexpected error occurred during sign up.",
+        },
+      };
     }
-
-    return { data: authData, error: null };
   };
 
   const signOut = async () => {
-    const { error } = await supabase.auth.signOut();
-    setProfile(null);
-    return { error };
+    try {
+      const { error } = await supabase.auth.signOut();
+      setProfile(null);
+      return { error };
+    } catch (error) {
+      return { error };
+    }
   };
 
   const resetPassword = async (email) => {
-    const { data, error } = await supabase.auth.resetPasswordForEmail(email);
-    return { data, error };
+    try {
+      const { data, error } = await supabase.auth.resetPasswordForEmail(email);
+      return { data, error };
+    } catch (error) {
+      return { data: null, error };
+    }
   };
 
   const value = {
@@ -132,5 +174,9 @@ export const AuthProvider = ({ children }) => {
 };
 
 export const useAuth = () => {
-  return useContext(AuthContext);
+  const context = useContext(AuthContext);
+  if (!context) {
+    throw new Error("useAuth must be used within an AuthProvider");
+  }
+  return context;
 };

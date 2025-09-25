@@ -5,8 +5,10 @@ import {
   StyleSheet,
   FlatList,
   TouchableOpacity,
+  Alert,
 } from "react-native";
 import { MaterialIcons } from "@expo/vector-icons";
+import { useAuth } from "../AuthContext";
 import PostCard from "../components/PostCard";
 
 const mockPosts = [
@@ -30,30 +32,57 @@ const mockPosts = [
   },
   {
     id: 3,
-    username: "alex_wong",
+    username: "jane_smith",
     userProfilePic:
-      "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150",
+      "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=150",
     postImage:
-      "https://images.unsplash.com/photo-1519681393784-d120267933ba?w=400",
-    caption: "City lights are amazing! 🌃",
+      "https://images.unsplash.com/photo-1501854140801-50d01698950b?w=400",
+    caption: "Mountain hiking adventure! ⛰️",
   },
 ];
 
 const HomeScreen = ({ navigation }) => {
+  const { user, profile, signOut } = useAuth();
+
   const navigateToCreatePost = () => {
     navigation.navigate("CreatePost");
+  };
+
+  const handleLogout = () => {
+    Alert.alert("Logout", "Are you sure you want to logout?", [
+      { text: "Cancel", style: "cancel" },
+      {
+        text: "Logout",
+        style: "destructive",
+        onPress: async () => {
+          await signOut();
+        },
+      },
+    ]);
   };
 
   return (
     <View style={styles.container}>
       <View style={styles.header}>
-        <Text style={styles.title}>เติมแมว 😸</Text>
-        <TouchableOpacity
-          style={styles.createPostButton}
-          onPress={navigateToCreatePost}
-        >
-          <MaterialIcons name="add" size={24} color="#fff" />
-        </TouchableOpacity>
+        <View>
+          <Text style={styles.title}>เติมแมว 😸</Text>
+          {profile && (
+            <Text style={styles.welcomeText}>สวัสดี {profile.username}!</Text>
+          )}
+        </View>
+
+        <View style={styles.headerButtons}>
+          <TouchableOpacity
+            style={styles.createPostButton}
+            onPress={navigateToCreatePost}
+          >
+            <MaterialIcons name="add" size={24} color="#fff" />
+          </TouchableOpacity>
+
+          <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
+            <MaterialIcons name="logout" size={20} color="#6200EA" />
+          </TouchableOpacity>
+        </View>
       </View>
 
       <FlatList
@@ -71,14 +100,14 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "#f5f5f5",
-    paddingTop: 50,
+    paddingTop: 30,
   },
   header: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
     paddingHorizontal: 16,
-    paddingVertical: 8,
+    paddingVertical: 12,
     backgroundColor: "#fff",
     borderBottomWidth: 1,
     borderBottomColor: "#e0e0e0",
@@ -88,6 +117,16 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
     color: "#333",
   },
+  welcomeText: {
+    fontSize: 14,
+    color: "#666",
+    marginTop: 2,
+  },
+  headerButtons: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 10,
+  },
   createPostButton: {
     backgroundColor: "#6200EA",
     width: 40,
@@ -95,6 +134,15 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     justifyContent: "center",
     alignItems: "center",
+  },
+  logoutButton: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    justifyContent: "center",
+    alignItems: "center",
+    borderWidth: 1,
+    borderColor: "#6200EA",
   },
   listContent: {
     paddingBottom: 16,
