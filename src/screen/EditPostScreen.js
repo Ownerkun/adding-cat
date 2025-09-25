@@ -104,7 +104,7 @@ const EditPostScreen = ({ route, navigation }) => {
               }
 
               Alert.alert("Success", "Post deleted successfully");
-              navigation.navigate("Main", { screen: "Profile" });
+              navigation.goBack();
             } catch (error) {
               console.error("Error deleting post:", error);
               Alert.alert("Error", "Failed to delete post");
