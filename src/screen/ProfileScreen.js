@@ -21,7 +21,7 @@ const ProfileScreen = ({ navigation }) => {
   const [userPosts, setUserPosts] = useState([]);
   const [profileLoading, setProfileLoading] = useState(true);
 
-  // Filter posts to show only user's posts
+  //Filter posts to show only user's posts
   useEffect(() => {
     if (user && posts) {
       const filteredPosts = posts.filter((post) => post.user_id === user.id);
@@ -31,7 +31,6 @@ const ProfileScreen = ({ navigation }) => {
   }, [posts, user]);
 
   const handleUpdateUser = async (updatedUser) => {
-    // This will be handled by the ProfileHeader component through AuthContext
     console.log("User updated:", updatedUser);
   };
 
@@ -48,31 +47,8 @@ const ProfileScreen = ({ navigation }) => {
     ]);
   };
 
-  const handleDeletePost = async (postId) => {
-    Alert.alert("Delete Post", "Are you sure you want to delete this post?", [
-      { text: "Cancel", style: "cancel" },
-      {
-        text: "Delete",
-        style: "destructive",
-        onPress: async () => {
-          try {
-            // TODO: Implement delete post functionality in PostContext
-            Alert.alert("Success", "Post deleted successfully");
-            await fetchPosts(); // Refresh posts
-          } catch (error) {
-            Alert.alert("Error", "Failed to delete post");
-          }
-        },
-      },
-    ]);
-  };
-
   const renderPostItem = ({ item }) => (
-    <PostCard
-      post={item}
-      onDelete={() => handleDeletePost(item.id)}
-      isOwnPost={true}
-    />
+    <PostCard post={item} isOwnPost={true} navigation={navigation} />
   );
 
   if (profileLoading) {

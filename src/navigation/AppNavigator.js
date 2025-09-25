@@ -11,6 +11,7 @@ import ProfileScreen from "../screen/ProfileScreen";
 import CreatePostScreen from "../screen/CreatePostScreen";
 import AuthScreen from "../screen/AuthScreen";
 import ForgetPasswordScreen from "../screen/ForgetPasswordScreen";
+import EditPostScreen from "../screen/EditPostScreen";
 
 const Tab = createBottomTabNavigator();
 const Stack = createStackNavigator();
@@ -21,6 +22,18 @@ const AuthenticatedStack = () => {
     <Stack.Navigator screenOptions={{ headerShown: false }}>
       <Stack.Screen name="Main" component={MainTabNavigator} />
       <Stack.Screen name="ForgetPassword" component={ForgetPasswordScreen} />
+      <Stack.Screen
+        name="EditPost"
+        component={EditPostScreen}
+        options={{
+          headerShown: true,
+          title: "Edit Post",
+          headerStyle: {
+            backgroundColor: "#fff",
+          },
+          headerTintColor: "#000",
+        }}
+      />
     </Stack.Navigator>
   );
 };

@@ -7,14 +7,12 @@ import {
   TouchableOpacity,
   useWindowDimensions,
   Alert,
-  ActionSheetIOS,
-  Platform,
 } from "react-native";
 import { MaterialIcons } from "@expo/vector-icons";
 import { useAuth } from "../AuthContext";
 import { usePost } from "../PostContext";
 
-const PostCard = ({ post, isOwnPost = false, onDelete }) => {
+const PostCard = ({ post, isOwnPost = false, navigation }) => {
   const [isLiked, setIsLiked] = useState(false);
   const [likeCount, setLikeCount] = useState(post.like_count || 0);
   const { user } = useAuth();
@@ -39,49 +37,8 @@ const PostCard = ({ post, isOwnPost = false, onDelete }) => {
     }
   };
 
-  const showActionSheet = () => {
-    if (Platform.OS === "ios") {
-      ActionSheetIOS.showActionSheetWithOptions(
-        {
-          options: ["Cancel", "Edit Post", "Delete Post"],
-          destructiveButtonIndex: 2,
-          cancelButtonIndex: 0,
-        },
-        (buttonIndex) => {
-          if (buttonIndex === 1) {
-            handleEditPost();
-          } else if (buttonIndex === 2) {
-            handleDeletePost();
-          }
-        }
-      );
-    } else {
-      Alert.alert("Post Options", "Choose an action", [
-        { text: "Cancel", style: "cancel" },
-        { text: "Edit Post", onPress: handleEditPost },
-        {
-          text: "Delete Post",
-          style: "destructive",
-          onPress: handleDeletePost,
-        },
-      ]);
-    }
-  };
-
   const handleEditPost = () => {
-    Alert.alert("Edit Post", "Edit functionality will be implemented soon");
-    // TODO: Navigate to edit post screen
-  };
-
-  const handleDeletePost = () => {
-    Alert.alert("Delete Post", "Are you sure you want to delete this post?", [
-      { text: "Cancel", style: "cancel" },
-      {
-        text: "Delete",
-        style: "destructive",
-        onPress: () => onDelete && onDelete(post.id),
-      },
-    ]);
+    navigation.navigate("EditPost", { post });
   };
 
   return (
@@ -104,8 +61,8 @@ const PostCard = ({ post, isOwnPost = false, onDelete }) => {
           </Text>
         </View>
         {isOwnPost && (
-          <TouchableOpacity style={styles.menuButton} onPress={showActionSheet}>
-            <MaterialIcons name="more-vert" size={20} color="#666" />
+          <TouchableOpacity style={styles.editButton} onPress={handleEditPost}>
+            <MaterialIcons name="edit" size={20} color="#666" />
           </TouchableOpacity>
         )}
       </View>
@@ -164,8 +121,8 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: "#666",
   },
-  menuButton: {
-    padding: 4,
+  editButton: {
+    padding: 8,
   },
   caption: {
     paddingHorizontal: 12,

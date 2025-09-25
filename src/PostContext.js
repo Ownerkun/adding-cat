@@ -63,6 +63,31 @@ export const PostProvider = ({ children }) => {
     }
   };
 
+  const updatePost = async (postId, caption) => {
+    try {
+      if (!user) throw new Error("User not authenticated");
+
+      const { data, error } = await supabase
+        .from("posts")
+        .update({
+          caption: caption,
+          updated_at: new Date().toISOString(),
+        })
+        .eq("id", postId)
+        .eq("user_id", user.id)
+        .select()
+        .single();
+
+      if (error) throw error;
+
+      await fetchPosts();
+      return { data, error: null };
+    } catch (error) {
+      console.error("Error updating post:", error);
+      return { data: null, error };
+    }
+  };
+
   //image upload
   const uploadImage = async (imageUri) => {
     try {
@@ -165,6 +190,7 @@ export const PostProvider = ({ children }) => {
     posts,
     loading,
     createPost,
+    updatePost,
     uploadImage,
     likePost,
     unlikePost,

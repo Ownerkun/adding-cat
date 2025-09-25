@@ -24,7 +24,11 @@ const HomeScreen = ({ navigation }) => {
   };
 
   const renderPostItem = ({ item }) => (
-    <PostCard post={item} isOwnPost={item.user_id === profile?.id} />
+    <PostCard
+      post={item}
+      isOwnPost={item.user_id === profile?.id}
+      navigation={navigation}
+    />
   );
 
   return (
